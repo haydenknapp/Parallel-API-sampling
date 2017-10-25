@@ -53,7 +53,7 @@ int main() {
 	assert(shared == N_3);
 
 	/* 4. Have the master thread stop the other threads. */
-	#define N_4 4
+/*	#define N_4 4
 	#define GOAL_4 256
 	#define MET 1
 	uint8_t met = 0;
@@ -61,15 +61,40 @@ int main() {
 
 	#pragma omp parallel for
 	for (int threadid = 0; threadid < N_4; ++threadid) {
+		#pragma omp single
+		if (cnt == GOAL_4)
+		{
+			met = MET;
+		}
 		#pragma omp critical
-		while (met != MET) {
+		while (met != MET)
+		{
 			++cnt;
 		}
-		#pragma omp master
-		if (cnt == GOAL_4)
-			met = met;
 	}
 	assert(cnt == GOAL_4);
+*/
+
+	/* 5. Spawn a discrete amount of threads. */
+	printf("\nUsing num_threads, using omp single to make one print.\n");
+	#pragma omp parallel num_threads(2)
+	{
+		printf("This should print twice.\n");
+		#pragma omp single
+		printf("This should print once.\n");
+	}
+
+	/* 6. Add into one integer in a critical. */
+	printf("\nAdding into one variable with atom sections...\n");
+	shared = 0;
+	#define N_6 8
+	#pragma omp parallel for
+	for (uint8_t threadid = 0; threadid < N_6; ++threadid) {
+		#pragma omp atomic
+			++shared;
+	}
+	printf("Each thread combined incremented \"shared\" to %d.\n", shared);
+	assert(shared == N_6);
 }
 
 
