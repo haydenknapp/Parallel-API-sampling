@@ -13,6 +13,8 @@
 #include <omp.h>
 /* standard ints */
 #include <stdint.h>
+/*assert*/
+#include <assert.h>
 
 int main() {
 	printf("Running tests...\n\n");
@@ -20,7 +22,7 @@ int main() {
 	/* 1. See if we can print 4 times using parallel for. */
 	printf("Using parallel for...\n");
 	#pragma omp parallel for
-	for (uint8_t threadid = 0; threadid < 8; ++threadid) {
+	for (uint8_t threadid = 0; threadid < 4; ++threadid) {
 		printf("Hello world from thread #%d\n", threadid);
 	}
 
@@ -37,4 +39,19 @@ int main() {
 		#pragma omp section
 		printf("Hello world from thread #4\n");
 	}
+
+	/* 2. Add into one integer in a critical. */
+	printf("\nAdding into one variable with critical sections...\n");
+	uint8_t shared = 0;
+	#define NUMTHREADS 8
+	#pragma omp parallel for
+	for (uint8_t threadid = 0; threadid < NUMTHREADS; ++threadid) {
+		#pragma omp critical
+		++shared;
+	}
+	printf("Each thread combined incremented \"shared\" to %d.\n", shared);
+	assert(shared == NUMTHREADS);
+
+
 }
+
