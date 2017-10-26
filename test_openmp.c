@@ -85,7 +85,7 @@ int main() {
 	}
 
 	/* 6. Add into one integer in a critical. */
-	printf("\nAdding into one variable with atom sections...\n");
+	printf("\nAdding into one variable with atomic sections...\n");
 	shared = 0;
 	#define N_6 8
 	#pragma omp parallel for
@@ -95,6 +95,15 @@ int main() {
 	}
 	printf("Each thread combined incremented \"shared\" to %d.\n", shared);
 	assert(shared == N_6);
-}
 
+
+	/* 7. Create seperate thread IDs for each using private */
+	printf("Seperate threadids via private test.\n");
+	uint8_t threadid;
+	#define N_7 4
+	#pragma omp parallel num_threads(N_7) private(threadid)
+	{
+		threadid = omp_get_thread_num();
+		printf("Hello from thread %d!\n", threadid);
+	}
 
