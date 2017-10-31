@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <assert.h>
+
+#if defined CRERUNDES
 
 /* Print "threadid: threadid" */
 void *thread_write(void *args) {
@@ -35,3 +38,44 @@ int main() {
 
 	return 0;
 }
+
+#elif MUTEX
+
+uint64_t shared_data;
+pthread_mutex_t lock;
+
+#define NUM_THREADS 32
+#define TIMES_TO_INC (1024*1024)
+/* Increment the shared data by 1 using mutex locks. */
+void *increment(void *arg) {
+	for (int i = 0; i < TIMES_TO_INC; ++i) {
+		pthread_mutex_lock(&lock);
+		++shared_data;
+		pthread_mutex_unlock(&lock);
+	}
+}
+
+int main() {
+	pthread_mutex_init(&lock, NULL);
+	pthread_t ids[NUM_THREADS];
+	shared_data = 0;
+	for (int i = 0; i < NUM_THREADS; ++i)
+		pthread_create(&ids[i], NULL, increment, NULL);
+
+	for (int i = 0; i < NUM_THREADS; ++i)
+		pthread_join(ids[i], NULL);
+	pthread_mutex_destroy(&lock);
+	printf("shared_data == %lu, should be %lu\n", shared_data, NUM_THREADS*TIMES_TO_INC);
+	assert(shared_data == NUM_THREADS*TIMES_TO_INC);
+}
+/* With mutex locking, the process completes correctly without
+ * any issues, but is of course much slower. Without the locks,
+ * the assertion is almost guaranteed to fail.
+ */
+#else
+
+int main() {
+	printf("No defines specified!\n");
+}
+
+#endif
