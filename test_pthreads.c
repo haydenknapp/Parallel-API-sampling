@@ -72,6 +72,13 @@ int main() {
  * any issues, but is of course much slower. Without the locks,
  * the assertion is almost guaranteed to fail.
  */
+
+#elif defined COND_VAR
+
+int main() {
+
+}
+
 #else
 
 int main() {

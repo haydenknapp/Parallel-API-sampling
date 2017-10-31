@@ -15,6 +15,32 @@
 #include <stdint.h>
 /*assert*/
 #include <assert.h>
+/* tim functions */
+#include "timer.h"
+
+/* do n amount of work. */
+void do_work(uint64_t i, uint64_t j) {
+	for (uint64_t it = 0; it < i * j * 1024 * 8; ++it) {
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+		it += 10;
+		it -= 10;
+	}
+}
+
+float elapsed;
 
 int main() {
 	printf("Running tests...\n\n");
@@ -107,4 +133,27 @@ int main() {
 		printf("Hello from thread %d!\n", threadid);
 	}
 
+	/* 8. Make a dynamic problem, but use static threads. */
+	const uint16_t n_8 = 16;
+	uint16_t i, j;
+	timer_start();
+	#pragma omp for
+	for (i = 0; i < n_8; ++i) {
+		for (j = 0; j < i; ++j) {
+			do_work(i, j);
+		}
+	}
+	timer_stop(elapsed);
+	printf("\nElapsed time: %f\n", elapsed);
+
+	/* 8. Make a dynamic problem, and use dynamic threads. */
+	timer_start();
+	#pragma omp for schedule(dynamic, 5) private(i, j)
+	for (i = 0; i < n_8; ++i) {
+		for (j = 0; j < i; ++j) {
+			do_work(i, j);
+		}
+	}
+	timer_stop(elapsed);
+	printf("\nElapsed time: %f\n", elapsed);
 }
